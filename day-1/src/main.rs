@@ -14,33 +14,55 @@ fn read_file(filename: String) -> Result<String, Box<dyn Error>> {
 fn part_1() {
     let input = read_file("./input.txt".to_string()).unwrap();
 
-    let mut total_fuel = 0;
+    let mut num_vec = Vec::<u32>::new();
     for line in input.lines() {
-        let mass: u32 = line.parse().unwrap();
-        let fuel = (mass / 3) - 2;
-        total_fuel += fuel;
+        num_vec.push(line.parse().unwrap())
     }
 
-    println!("{}", total_fuel);
+    let mut i = 0;
+    let mut j = 0;
+    while !(num_vec[i] + num_vec[j] == 2020) {
+        if j < num_vec.len() - 1 {
+            j += 1;
+        } else {
+            i += 1;
+            j = 0;
+        }
+    }
+
+    println!("{} {}", num_vec[i], num_vec[j]);
+    
+    let ans = num_vec[i] * num_vec[j];
+    println!("Answer is {}", ans);
 }
 
 fn part_2() {
     let input = read_file("./input.txt".to_string()).unwrap();
 
-    let mut total_fuel = 0;
+    let mut num_vec = Vec::<u32>::new();
     for line in input.lines() {
-        let mass: i32 = line.parse().unwrap();
-        let mut fuel = (mass / 3) - 2;
-        let mut extra_fuel = fuel;
-        loop {
-            extra_fuel = (extra_fuel / 3) - 2;
-            if extra_fuel <= 0 {
-                break;
-            }
-            fuel += extra_fuel;
-        }
-        total_fuel += fuel;
+        num_vec.push(line.parse().unwrap())
     }
 
-    println!("{}", total_fuel);
+    let mut i = 0;
+    let mut j = 0;
+    let mut k = 0;
+    while !(num_vec[i] + num_vec[j] + num_vec[k] == 2020) {
+        if k < num_vec.len() - 1 {
+            k += 1;
+        } else {
+            k = 0;
+            if j < num_vec.len() - 1 {
+                j += 1;
+            } else {
+                i += 1;
+                j = 0;
+            }
+        }
+    }
+
+    println!("{} {} {}", num_vec[i], num_vec[j], num_vec[k]);
+    
+    let ans = num_vec[i] * num_vec[j] * num_vec[k];
+    println!("Answer is {}", ans);
 }
