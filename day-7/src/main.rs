@@ -5,6 +5,7 @@ use std::fs;
 
 fn main() {
     part_1();
+    part_2();
 }
 
 fn read_file(filename: String) -> Result<String, Box<dyn Error>> {
@@ -77,4 +78,76 @@ fn part_1() {
     }
     // println!("{:?}", containing_colors_done);
     println!("{}", containing_colors_done.len());
+}
+
+#[derive(Debug, Clone)]
+struct NumberColour {
+    number: u32,
+    color: String,
+}
+
+fn part_2() {
+    let input = read_file("./input.txt".to_string()).unwrap();
+
+    let re =
+        Regex::new(r"(?P<ext>.*) bags contain ((?P<middle>.*)\d+ (?P<last>[^\d]*)|no other bags).")
+            .unwrap();
+    let middle_re = Regex::new(r"(?P<number>\d+) (?P<color>[^\d]*) bags?(, |.)").unwrap();
+
+    let mut is_containing = HashMap::<String, Vec<NumberColour>>::new();
+    for line in input.lines() {
+        let caps = re.captures(line).unwrap();
+        let middle_caps: Vec<NumberColour> = middle_re
+            .captures_iter(line)
+            .map(|c| NumberColour {
+                number: c["number"].to_string().parse().unwrap(),
+                color: c["color"].to_string(),
+            })
+            .collect();
+        let external_cap = caps["ext"].to_string();
+
+        // containing map
+        is_containing.insert(external_cap, middle_caps);
+    }
+    // println!("{:?}", is_containing);
+    let mut is_containing_buf = Vec::<NumberColour>::new();
+    match is_containing.get("shiny gold") {
+        Some(numcol) => {
+            is_containing_buf.extend(numcol.clone());
+            // is_containing_count.sort();
+            // is_containing_count.dedup();
+        }
+        None => {}
+    }
+    // println!("{:?}", is_containing_buf);
+    let mut is_containing_done = is_containing_buf.clone();
+    let mut at_bottom = false;
+    let mut total_bags = 0;
+    while !at_bottom {
+        at_bottom = true;
+        is_containing_buf = Vec::new();
+        for c in &is_containing_done {
+            match is_containing.get(&c.color) {
+                Some(colors) => {
+                    at_bottom = false;
+                    for col in colors {
+                        is_containing_buf.push(NumberColour {
+                            number: c.number * col.number,
+                            color: col.color.clone(),
+                        });
+                    }
+                }
+                None => {}
+            }
+        }
+        for bag in is_containing_done {
+            total_bags += bag.number;
+        }
+        is_containing_done = is_containing_buf.clone();
+        // println!("buf: {:?}", is_containing_buf);
+        // println!("done: {:?}", is_containing_done);
+        // println!("{}", total_bags);
+    }
+    println!("{}", total_bags);
+    // println!("{}", is_containing_done.len());
 }
