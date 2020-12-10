@@ -2,7 +2,7 @@ use std::error::Error;
 use std::fs;
 
 fn main() {
-    // part_1();
+    part_1();
     part_2();
 }
 
@@ -54,14 +54,14 @@ fn part_2() {
         }
     }
     three_apart_subsets.push(&jolt_vec[set_start..jolt_vec.len()]);
-    println!("{:?}", jolt_vec);
-    println!("{:?}", three_apart_subsets);
+    // println!("{:?}", jolt_vec);
+    // println!("{:?}", three_apart_subsets);
 
     let mut num_ways: u64 = get_num_ways(&three_apart_subsets[0], three_apart_subsets[0][0]) as u64;
-    println!("{}", num_ways);
+    // println!("{}", num_ways);
     for i in 1..three_apart_subsets.len() {
         let int_num_ways = get_num_ways(&three_apart_subsets[i], 3);
-        println!("{}", int_num_ways);
+        // println!("{}", int_num_ways);
         num_ways *= int_num_ways as u64;
     }
     println!("{}", num_ways);
