@@ -2,6 +2,7 @@ use std::error::Error;
 use std::fs;
 
 fn main() {
+    part_1();
     part_2();
 }
 
