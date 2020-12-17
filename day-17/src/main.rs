@@ -3,6 +3,7 @@ use std::fs;
 
 fn main() {
     part_1();
+    part_2();
 }
 
 fn read_file(filename: String) -> Result<String, Box<dyn Error>> {
@@ -18,15 +19,15 @@ fn part_1() {
     for line in input.lines() {
         planes[0].push(line.chars().collect());
     }
-    for z in 0..planes.len() {
-        println!("Plane z={}", z);
-        for y in 0..planes[0].len() {
-            for x in 0..planes[0][0].len() {
-                print!("{}", planes[z][y][x]);
-            }
-            println!("");
-        }
-    }
+    // for z in 0..planes.len() {
+    //     println!("Plane z={}", z);
+    //     for y in 0..planes[0].len() {
+    //         for x in 0..planes[0][0].len() {
+    //             print!("{}", planes[z][y][x]);
+    //         }
+    //         println!("");
+    //     }
+    // }
 
     let mut next_state;
     for _ in 0..6 {
@@ -101,15 +102,15 @@ fn part_1() {
         }
 
         planes = next_state.clone();
-        for z in 0..planes.len() {
-            println!("Plane z={}", z);
-            for y in 0..planes[0].len() {
-                for x in 0..planes[0][0].len() {
-                    print!("{}", planes[z][y][x]);
-                }
-                println!("");
-            }
-        }
+        // for z in 0..planes.len() {
+        //     println!("Plane z={}", z);
+        //     for y in 0..planes[0].len() {
+        //         for x in 0..planes[0][0].len() {
+        //             print!("{}", planes[z][y][x]);
+        //         }
+        //         println!("");
+        //     }
+        // }
     }
 
     let mut num_active = 0;
@@ -118,6 +119,152 @@ fn part_1() {
             for x in 0..planes[0][0].len() {
                 if planes[z][y][x] == '#' {
                     num_active += 1;
+                }
+            }
+        }
+    }
+
+    println!("{}", num_active);
+}
+
+fn part_2() {
+    let input = read_file("./input.txt".to_string()).unwrap();
+
+    let mut planes = Vec::<Vec<Vec<Vec<char>>>>::new();
+    planes.push(Vec::<Vec<Vec<char>>>::new());
+    planes[0].push(Vec::<Vec<char>>::new());
+    for line in input.lines() {
+        planes[0][0].push(line.chars().collect());
+    }
+    // for z in 0..planes.len() {
+    //     println!("Plane z={}", z);
+    //     for y in 0..planes[0].len() {
+    //         for x in 0..planes[0][0].len() {
+    //             print!("{}", planes[z][y][x]);
+    //         }
+    //         println!("");
+    //     }
+    // }
+
+    let mut next_state;
+    for _ in 0..6 {
+        next_state = planes.clone();
+        for w in 0..planes.len() {
+            for z in 0..planes[0].len() {
+                for y in 0..planes[0][0].len() {
+                    next_state[w][z][y].insert(0, '.');
+                    next_state[w][z][y].push('.');
+                }
+                next_state[w][z].insert(0, vec!['.'; planes[0][0][0].len() + 2]);
+                next_state[w][z].push(vec!['.'; planes[0][0][0].len() + 2]);
+            }
+            next_state[w].insert(
+                0,
+                vec![vec!['.'; planes[0][0][0].len() + 2]; planes[0][0].len() + 2],
+            );
+            next_state[w].push(vec![
+                vec!['.'; planes[0][0][0].len() + 2];
+                planes[0][0].len() + 2
+            ]);
+        }
+        next_state.insert(
+            0,
+            vec![
+                vec![vec!['.'; planes[0][0][0].len() + 2]; planes[0][0].len() + 2];
+                planes[0].len() + 2
+            ],
+        );
+        next_state.push(vec![
+            vec![
+                vec!['.'; planes[0][0][0].len() + 2];
+                planes[0][0].len() + 2
+            ];
+            planes[0].len() + 2
+        ]);
+        planes = next_state.clone();
+
+        // println!("Padded edge");
+        // for z in 0..planes.len() {
+        //     println!("Plane z={}", z);
+        //     for y in 0..planes[0].len() {
+        //         for x in 0..planes[0][0].len() {
+        //             print!("{}", planes[z][y][x]);
+        //         }
+        //         println!("");
+        //     }
+        // }
+
+        for w in 0..planes.len() {
+            for z in 0..planes[0].len() {
+                for y in 0..planes[0][0].len() {
+                    for x in 0..planes[0][0][0].len() {
+                        let mut num_active_neighbours = 0;
+                        for w_pos in &[-1i32, 0, 1] {
+                            for z_pos in &[-1i32, 0, 1] {
+                                for y_pos in &[-1i32, 0, 1] {
+                                    for x_pos in &[-1i32, 0, 1] {
+                                        if *w_pos == 0 && *z_pos == 0 && *y_pos == 0 && *x_pos == 0
+                                            || (w as i32 + w_pos) as usize == planes.len()
+                                            || (w as i32 + w_pos) == -1
+                                            || (z as i32 + z_pos) as usize == planes[0].len()
+                                            || (z as i32 + z_pos) == -1
+                                            || (y as i32 + y_pos) as usize == planes[0][0].len()
+                                            || (y as i32 + y_pos) == -1
+                                            || (x as i32 + x_pos) as usize == planes[0][0][0].len()
+                                            || (x as i32 + x_pos) == -1
+                                        {
+                                            continue;
+                                        }
+                                        if planes[(w as i32 + w_pos) as usize]
+                                            [(z as i32 + z_pos) as usize]
+                                            [(y as i32 + y_pos) as usize]
+                                            [(x as i32 + x_pos) as usize]
+                                            == '#'
+                                        {
+                                            num_active_neighbours += 1;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        match planes[w][z][y][x] {
+                            '#' => {
+                                if !(num_active_neighbours == 2 || num_active_neighbours == 3) {
+                                    next_state[w][z][y][x] = '.'
+                                }
+                            }
+                            '.' => {
+                                if num_active_neighbours == 3 {
+                                    next_state[w][z][y][x] = '#'
+                                }
+                            }
+                            _ => panic!("Unknown cube state"),
+                        }
+                    }
+                }
+            }
+        }
+
+        planes = next_state.clone();
+        // for z in 0..planes.len() {
+        //     println!("Plane z={}", z);
+        //     for y in 0..planes[0].len() {
+        //         for x in 0..planes[0][0].len() {
+        //             print!("{}", planes[z][y][x]);
+        //         }
+        //         println!("");
+        //     }
+        // }
+    }
+
+    let mut num_active = 0;
+    for w in 0..planes.len() {
+        for z in 0..planes[0].len() {
+            for y in 0..planes[0][0].len() {
+                for x in 0..planes[0][0][0].len() {
+                    if planes[w][z][y][x] == '#' {
+                        num_active += 1;
+                    }
                 }
             }
         }
