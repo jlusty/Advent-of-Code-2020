@@ -66,8 +66,8 @@ fn part_1() {
 
     let to_trace = rules.get(&0).unwrap();
     let mut refs = to_trace.refs.clone();
-    for i in 0..10 {
-        println!("{}", i);
+    for _ in 0..9 {
+        // println!("{}", i);
         let mut all_new_refs = Vec::new();
         for rule in &refs {
             let mut new_refs = vec![Vec::<u32>::new()];
@@ -121,7 +121,7 @@ fn part_1() {
 
     let mut num_valid = 0;
     for m in messages {
-        println!("{}", m);
+        // println!("{}", m);
         if rule_str_vec.contains(&m) {
             num_valid += 1;
         }
