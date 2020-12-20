@@ -12,9 +12,19 @@ fn read_file(filename: String) -> Result<String, Box<dyn Error>> {
 }
 
 #[derive(Debug)]
+enum RuleValue {
+    RuleStr(String),
+    RuleRef(u32),
+}
+
+#[derive(Debug)]
+struct SingleRule {
+    rule: Vec<RuleValue>,
+}
+
+#[derive(Debug)]
 struct Rule {
-    st: Option<Vec<String>>,
-    refs: Vec<Vec<u32>>,
+    rules: Vec<SingleRule>,
 }
 
 fn part_1() {
@@ -37,26 +47,31 @@ fn part_1() {
             let mut rule_parts = line.split(": ");
             let rule_num = rule_parts.next().unwrap().parse().unwrap();
             let rule_unparsed = rule_parts.next().unwrap().to_string();
-            let mut rule_parsed = vec![Vec::new()];
-            let mut rule_st = None;
+            let mut rule = Rule { rules: Vec::new() };
             for w in rule_unparsed.split(" ") {
                 match w {
-                    "|" => rule_parsed.push(Vec::new()),
-                    "\"a\"" => rule_st = Some(vec![String::from("a")]),
-                    "\"b\"" => rule_st = Some(vec![String::from("b")]),
-                    num => {
-                        let last_idx = rule_parsed.len() - 1;
-                        rule_parsed[last_idx].push(num.parse().unwrap())
-                    }
+                    "|" => rule.rules.push(SingleRule { rule: Vec::new() }),
+                    "\"a\"" => rule
+                        .rules
+                        .last()
+                        .unwrap()
+                        .rule
+                        .push(RuleValue::RuleStr(String::from("a"))),
+                    "\"b\"" => rule
+                        .rules
+                        .last()
+                        .unwrap()
+                        .rule
+                        .push(RuleValue::RuleStr(String::from("b"))),
+                    num => rule
+                        .rules
+                        .last()
+                        .unwrap()
+                        .rule
+                        .push(RuleValue::RuleRef(num.parse().unwrap())),
                 }
             }
-            rules.insert(
-                rule_num,
-                Rule {
-                    st: rule_st,
-                    refs: rule_parsed,
-                },
-            );
+            rules.insert(rule_num, rule);
         } else {
             messages.push(line);
         }
@@ -64,67 +79,36 @@ fn part_1() {
     // println!("{:?}", rules);
     // println!("{:?}", messages);
 
-    let to_trace = rules.get(&0).unwrap();
-    let mut refs = to_trace.refs.clone();
-    for _ in 0..9 {
-        // println!("{}", i);
-        let mut all_new_refs = Vec::new();
-        for rule in &refs {
-            let mut new_refs = vec![Vec::<u32>::new()];
-            // println!("rule: {:?}", rule);
-            for num in rule {
-                if rules.get(&num).unwrap().st.is_none() {
-                    let traced_ref = &rules.get(&num).unwrap().refs;
-                    // println!("{:?}", &traced_ref);
-                    let mut new_new_refs = Vec::new();
-                    for single_traced_ref in traced_ref {
-                        // println!("str: {:?}", single_traced_ref);
-                        let mut single_new_ref = new_refs.clone();
-                        for nr in &mut single_new_ref {
-                            for tr in single_traced_ref {
-                                nr.push(*tr);
-                            }
-                        }
-                        for snf in single_new_ref {
-                            new_new_refs.push(snf);
-                        }
-                    }
-                    // println!("nnr: {:?}", new_new_refs);
-                    new_refs = new_new_refs;
-                } else {
-                    let mut single_new_ref = new_refs.clone();
-                    for nr in &mut single_new_ref {
-                        nr.push(*num);
-                    }
-                    new_refs = single_new_ref;
-                }
-            }
-            // println!("{:?}", new_refs);
-            for n in new_refs {
-                all_new_refs.push(n);
-            }
-        }
-        refs = all_new_refs;
-    }
+    // let to_trace = rules.get(&0).unwrap();
+    // let mut vec_of_rules = to_trace.refs.clone();
+    // let is_replacing = true;
+    // while is_replacing {
+    //     for rule in &vec_of_rules {
+    //         for num in &rule {
+    //             let tracing_rule = true;
+    //             while tracing_rule
+    //         }
+    //     }
+    // }
 
-    let mut rule_str_vec = Vec::new();
-    // println!("refs: {:?}", refs);
-    for rule in refs {
-        let mut rule_str = String::from("");
-        for num in rule {
-            let r = rules.get(&num).unwrap();
-            rule_str = format!("{}{}", rule_str, r.st.as_ref().unwrap()[0])
-        }
-        rule_str_vec.push(rule_str);
-    }
-    // println!("rule_str_vec: {:?}", rule_str_vec);
+    // let mut rule_str_vec = Vec::new();
+    // // println!("refs: {:?}", refs);
+    // for rule in vec_of_rules {
+    //     let mut rule_str = String::from("");
+    //     for num in rule {
+    //         let r = rules.get(&num).unwrap();
+    //         rule_str = format!("{}{}", rule_str, r.st.as_ref().unwrap()[0])
+    //     }
+    //     rule_str_vec.push(rule_str);
+    // }
+    // // println!("rule_str_vec: {:?}", rule_str_vec);
 
-    let mut num_valid = 0;
-    for m in messages {
-        // println!("{}", m);
-        if rule_str_vec.contains(&m) {
-            num_valid += 1;
-        }
-    }
-    println!("{}", num_valid);
+    // let mut num_valid = 0;
+    // for m in messages {
+    //     // println!("{}", m);
+    //     if rule_str_vec.contains(&m) {
+    //         num_valid += 1;
+    //     }
+    // }
+    // println!("{}", num_valid);
 }
