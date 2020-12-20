@@ -212,15 +212,23 @@ fn part_2() {
 
     // println!("{:?}", corners);
 
-    let mut image_layout: Vec<Vec<u32>> = Vec::new();
-    image_layout.push(vec![corners[0]]);
-
+    let mut image_layout: Vec<Vec<(u32, usize)>> = Vec::new();
     let starting_directions = matching_edges
         .get(&corners[0])
         .unwrap()
         .iter()
         .map(|e| e.matching_from)
+        .rev()
         .collect::<Vec<usize>>();
+    let starting_orientation = matching_edges
+        .get(&corners[0])
+        .unwrap()
+        .iter()
+        .map(|e| e.matching_to)
+        .rev()
+        .collect::<Vec<usize>>();
+
+    image_layout.push(vec![(corners[0], starting_orientation[0])]);
 
     let mut next_below = matching_edges
         .get(&corners[0])
@@ -230,7 +238,7 @@ fn part_2() {
         .next();
     while next_below.is_some() {
         let current_edge = next_below.unwrap();
-        image_layout.push(vec![current_edge.id]);
+        image_layout.push(vec![(current_edge.id, current_edge.matching_to)]);
         let new_match = (current_edge.matching_to + 2) % 4;
         next_below = matching_edges
             .get(&current_edge.id)
@@ -242,28 +250,22 @@ fn part_2() {
 
     for r in 0..image_layout.len() {
         let mut next_to_right = matching_edges
-            .get(&image_layout[r][0])
+            .get(&image_layout[r][0].0)
             .unwrap()
             .iter()
             .filter(|e| {
                 if r > 0 && r < image_layout.len() - 1 {
-                    e.id != image_layout[r - 1][0] && e.id != image_layout[r + 1][0]
+                    e.id != image_layout[r - 1][0].0 && e.id != image_layout[r + 1][0].0
                 } else if r > 0 {
-                    e.id != image_layout[r - 1][0]
+                    e.id != image_layout[r - 1][0].0
                 } else {
-                    e.id != image_layout[r + 1][0]
+                    e.id != image_layout[r + 1][0].0
                 }
             })
             .next();
-        println!("{:?}", matching_edges.get(&image_layout[r][0]));
         while next_to_right.is_some() {
             let current_edge = next_to_right.unwrap();
-            image_layout[r].push(current_edge.id);
-            // let new_match = if current_edge.matching_to < 4 {
-            //     (current_edge.matching_to + 2) % 4
-            // } else {
-            //     ((current_edge.matching_to + 2) % 4) + 4
-            // };
+            image_layout[r].push((current_edge.id, current_edge.matching_to));
             let new_match = (current_edge.matching_to + 2) % 4;
             next_to_right = matching_edges
                 .get(&current_edge.id)
@@ -271,16 +273,67 @@ fn part_2() {
                 .iter()
                 .filter(|e| e.matching_from == new_match)
                 .next();
-            // println!(
-            //     "id: {} is {:?}, {}",
-            //     current_edge.id,
-            //     matching_edges.get(&current_edge.id),
-            //     new_match
-            // );
         }
     }
 
-    for row in image_layout {
+    for row in &image_layout {
         println!("{:?}", row);
     }
+
+    let chunk_height = tiles_vec[0].top.len();
+    let mut image_grid: Vec<Vec<char>> = vec![Vec::new(); chunk_height * image_layout.len()];
+    for row in 0..image_layout.len() {
+        for col in 0..image_layout[row].len() {
+            let tile_id = image_layout[row][col].0;
+            let tile_top = image_layout[row][col].1;
+            let tile = tiles_vec.iter().filter(|t| t.id == tile_id).next().unwrap();
+            for y in 0..tile.all.len() {
+                let to_extend = match tile_top {
+                    0 => tile.all[y].clone(),
+                    1 => tile
+                        .all
+                        .clone()
+                        .iter()
+                        .map(|r| r[chunk_height - 1 - y])
+                        .collect::<Vec<char>>(),
+                    2 => tile.all[chunk_height - 1 - y]
+                        .clone()
+                        .into_iter()
+                        .rev()
+                        .collect::<Vec<char>>(),
+                    3 => tile
+                        .all
+                        .clone()
+                        .iter()
+                        .map(|r| r[y])
+                        .rev()
+                        .collect::<Vec<char>>(),
+                    4 => tile.all[y].clone().into_iter().rev().collect::<Vec<char>>(),
+                    5 => tile
+                        .all
+                        .clone()
+                        .iter()
+                        .map(|r| r[chunk_height - 1 - y])
+                        .rev()
+                        .collect::<Vec<char>>(),
+                    6 => tile.all[chunk_height - 1 - y]
+                        .clone()
+                        .into_iter()
+                        .collect::<Vec<char>>(),
+                    7 => tile.all.clone().iter().map(|r| r[y]).collect::<Vec<char>>(),
+                    _ => panic!("Unknown tile top!"),
+                };
+                image_grid[row * chunk_height + y].extend(to_extend)
+            }
+        }
+    }
+
+    for row in &image_grid {
+        for col in row {
+            print!("{}", &col);
+        }
+        println!("")
+    }
+
+    // Search for sea monsters
 }
