@@ -84,15 +84,9 @@ fn part_2() {
             cup_label_vec.push(c.to_digit(10).unwrap())
         }
     }
-    for i in 10..1000000 + 1 {
-        cup_label_vec.push(i);
-    }
 
     let mut current_cup_idx = 0;
-    for move_num in 0..10000000 {
-        if move_num % 1000 == 0 {
-            println!("{}", move_num);
-        }
+    for _ in 0..100 {
         let current_cup = cup_label_vec[current_cup_idx];
         let removed_cups = [
             cup_label_vec[(current_cup_idx + 1) % cup_label_vec.len()],
@@ -101,11 +95,11 @@ fn part_2() {
         ];
         let mut destination_cup = current_cup - 1;
         if destination_cup == 0 {
-            destination_cup = 1000000;
+            destination_cup = 9;
         }
         while removed_cups.contains(&destination_cup) {
             destination_cup = if destination_cup == 1 {
-                1000000 // Maximum cup label
+                9 // Maximum cup label
             } else {
                 destination_cup - 1
             };
@@ -142,9 +136,11 @@ fn part_2() {
     while cup_label_vec[index_of_1] != 1 {
         index_of_1 += 1;
     }
-    println!(
-        "{}",
-        cup_label_vec[(index_of_1 + 1) % cup_label_vec.len()]
-            * cup_label_vec[(index_of_1 + 2) % cup_label_vec.len()]
-    );
+    for i in 0..cup_label_vec.len() - 1 {
+        print!(
+            "{}",
+            cup_label_vec[(index_of_1 + 1 + i) % cup_label_vec.len()]
+        )
+    }
+    println!("");
 }
