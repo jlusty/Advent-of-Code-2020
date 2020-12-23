@@ -1,4 +1,3 @@
-use std::collections::LinkedList;
 use std::error::Error;
 use std::fs;
 
@@ -79,31 +78,34 @@ fn part_1() {
 fn part_2() {
     let input = read_file("./input.txt".to_string()).unwrap();
 
-    let mut cup_label_list = LinkedList::<u32>::new();
+    let mut cup_label_vec = Vec::<u32>::new();
     for line in input.lines() {
         for c in line.chars() {
-            cup_label_list.push_back(c.to_digit(10).unwrap())
+            cup_label_vec.push(c.to_digit(10).unwrap())
         }
     }
+    for i in 10..1000000 + 1 {
+        cup_label_vec.push(i);
+    }
 
-    for _ in 0..100 {
-        println!("{:?}", cup_label_list);
-
-        let current_cup = cup_label_list.pop_front().unwrap();
+    let mut current_cup_idx = 0;
+    for move_num in 0..10000000 {
+        if move_num > 0 && move_num % 1000 == 0 {
+            println!("{}", (move_num as f64) / 10000000f64 * 100f64);
+        }
+        let current_cup = cup_label_vec[current_cup_idx];
         let removed_cups = [
-            cup_label_list.pop_front().unwrap(),
-            cup_label_list.pop_front().unwrap(),
-            cup_label_list.pop_front().unwrap(),
+            cup_label_vec[(current_cup_idx + 1) % cup_label_vec.len()],
+            cup_label_vec[(current_cup_idx + 2) % cup_label_vec.len()],
+            cup_label_vec[(current_cup_idx + 3) % cup_label_vec.len()],
         ];
-        cup_label_list.push_back(current_cup);
-
         let mut destination_cup = current_cup - 1;
         if destination_cup == 0 {
-            destination_cup = 9;
+            destination_cup = 1000000;
         }
         while removed_cups.contains(&destination_cup) {
             destination_cup = if destination_cup == 1 {
-                9 // Maximum cup label
+                1000000 // Maximum cup label
             } else {
                 destination_cup - 1
             };
@@ -115,35 +117,35 @@ fn part_2() {
         // println!("destination: {:?}", destination_cup);
         // println!("");
 
-        let mut i = 0;
-        for label in cup_label_list.iter() {
-            if *label == destination_cup {
-                i += 1;
-                let mut new_list = cup_label_list.split_off(i);
-                for rc_idx in 0..3 {
-                    new_list.push_front(removed_cups[2 - rc_idx]);
-                }
-                cup_label_list.append(&mut new_list);
-                break;
-            }
-            i += 1;
+        let removal_idx = (current_cup_idx + 1) % cup_label_vec.len();
+        for _ in 0..3 {
+            cup_label_vec.remove(if removal_idx >= cup_label_vec.len() {
+                0
+            } else {
+                removal_idx
+            });
         }
+        let destination_cup_idx = cup_label_vec
+            .iter()
+            .position(|x| *x == destination_cup)
+            .unwrap();
+        cup_label_vec.insert(destination_cup_idx + 1, removed_cups[0]);
+        cup_label_vec.insert(destination_cup_idx + 2, removed_cups[1]);
+        cup_label_vec.insert(destination_cup_idx + 3, removed_cups[2]);
+        while cup_label_vec[current_cup_idx] != current_cup {
+            current_cup_idx += 1;
+        }
+        current_cup_idx = (current_cup_idx + 1) % cup_label_vec.len();
     }
 
     let mut index_of_1 = 0;
-    for cup_label in cup_label_list.iter() {
-        if *cup_label == 1 {
-            let mut new_start_of_list = cup_label_list.split_off(index_of_1);
-            new_start_of_list.append(&mut cup_label_list);
-
-            let mut output_ans = new_start_of_list.iter();
-            output_ans.next();
-            for i in output_ans {
-                print!("{}", i)
-            }
-            println!("");
-            return;
-        }
+    while cup_label_vec[index_of_1] != 1 {
         index_of_1 += 1;
     }
+    println!(
+        "{}",
+        cup_label_vec[(index_of_1 + 1) % cup_label_vec.len()]
+            * cup_label_vec[(index_of_1 + 2) % cup_label_vec.len()]
+    );
+    println!("");
 }
